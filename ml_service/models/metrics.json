@@ -1,0 +1,12 @@
+{
+  "match_winner": {
+    "accuracy": 0.47706422018348627,
+    "roc_auc": 0.478698324492717
+  },
+  "score_predictor": {
+    "rmse": 18.179854128618537
+  },
+  "fantasy_points": {
+    "rmse": 133.2953158157387
+  }
+}
