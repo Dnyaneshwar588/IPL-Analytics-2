@@ -64,16 +64,17 @@ export default function Teams() {
   return (
     <div className="space-y-8">
       {/* Header with Team Dropdown Selector */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">Franchise Performance Analysis</h1>
-          <p className="mt-2 text-textMuted">Explore statistical insights and seasonal trends of each IPL team.</p>
+          <p className="mt-2 text-slate-400">Explore statistical insights and seasonal trends of each IPL team.</p>
         </div>
-        <div>
+        <div className="w-full sm:w-64">
+          <label className="form-label block mb-2">Select Team</label>
           <select 
             value={selectedTeam}
             onChange={(e) => setSelectedTeam(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white font-semibold outline-none focus:border-accentBlue sm:w-64"
+            className="form-select w-full"
           >
             {teams.map(t => (
               <option key={t.name} value={t.name}>{t.name}</option>
@@ -85,31 +86,43 @@ export default function Teams() {
       {/* KPI row for selected team */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* KPI 1 */}
-        <div className="glass-card p-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-textMuted">Matches Played</p>
-          <h3 className="mt-2 text-3xl font-extrabold text-white">{teamStats.matchesPlayed}</h3>
-          <p className="mt-1 text-xs text-textMuted">Cumulative match counts</p>
+        <div className="kpi-card">
+          <div className="rounded-lg bg-accentBlue/20 p-3 text-accentBlue w-fit mb-3">
+            <Trophy size={20} />
+          </div>
+          <p className="form-label">Matches Played</p>
+          <h3 className="mt-2 text-4xl font-extrabold gradient-text">{teamStats.matchesPlayed}</h3>
+          <p className="mt-3 text-xs text-slate-400">Cumulative match counts</p>
         </div>
 
-        {/* KPI 2 */}
-        <div className="glass-card p-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-textMuted">Total Wins</p>
-          <h3 className="mt-2 text-3xl font-extrabold text-white">{teamStats.wins}</h3>
-          <p className="mt-1 text-xs text-accentGreen font-semibold">Most wins at home & away</p>
+        {/* KPI 2 - Highlight */}
+        <div className="kpi-card highlight">
+          <div className="rounded-lg bg-accentGreen/20 p-3 text-accentGreen w-fit mb-3">
+            <Trophy size={20} />
+          </div>
+          <p className="form-label">Total Wins</p>
+          <h3 className="mt-2 text-4xl font-extrabold gradient-green-text">{teamStats.wins}</h3>
+          <p className="mt-3 text-xs text-slate-400">Most wins at home & away</p>
         </div>
 
         {/* KPI 3 */}
-        <div className="glass-card p-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-textMuted">Win Rate</p>
-          <h3 className="mt-2 text-3xl font-extrabold text-white">{teamStats.winPercentage}%</h3>
-          <p className="mt-1 text-xs text-accentBlue font-semibold">Total Win / Play ratio</p>
+        <div className="kpi-card">
+          <div className="rounded-lg bg-accentBlue/20 p-3 text-accentBlue w-fit mb-3">
+            <BarChart2 size={20} />
+          </div>
+          <p className="form-label">Win Rate</p>
+          <h3 className="mt-2 text-4xl font-extrabold text-white">{teamStats.winPercentage}%</h3>
+          <p className="mt-3 text-xs text-slate-400">Total Win / Play ratio</p>
         </div>
 
         {/* KPI 4 */}
-        <div className="glass-card p-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-textMuted">Toss Wins</p>
-          <h3 className="mt-2 text-3xl font-extrabold text-white">{teamStats.tossWins}</h3>
-          <p className="mt-1 text-xs text-accentYellow font-semibold">Toss win probability</p>
+        <div className="kpi-card">
+          <div className="rounded-lg bg-accentYellow/20 p-3 text-accentYellow w-fit mb-3">
+            <Target size={20} />
+          </div>
+          <p className="form-label">Toss Wins</p>
+          <h3 className="mt-2 text-4xl font-extrabold text-white">{teamStats.tossWins}</h3>
+          <p className="mt-3 text-xs text-slate-400">Toss win probability</p>
         </div>
       </div>
 
@@ -121,9 +134,9 @@ export default function Teams() {
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Target size={18} className="text-accentBlue" /> Win Conditions
             </h3>
-            <p className="text-xs text-textMuted">Ratio of wins achieved when batting first vs chasing.</p>
+            <p className="text-xs text-slate-400 mt-1">Ratio of wins achieved when batting first vs chasing.</p>
           </div>
-          <div className="h-64 flex justify-center items-center">
+          <div className="h-72 flex justify-center items-center rounded-lg bg-slate-900/30 p-4">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -131,16 +144,25 @@ export default function Teams() {
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
-                  outerRadius={80}
+                  outerRadius={90}
                   paddingAngle={5}
                   dataKey="value"
+                  label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                  labelLine={false}
                 >
                   {winData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.08)', borderRadius: '10px' }} />
-                <Legend verticalAlign="bottom" height={36} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1e293b', 
+                    borderColor: '#38bdf8',
+                    borderRadius: '8px',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+                  }}
+                  formatter={(value) => [`${value} wins`, 'Count']}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -152,9 +174,9 @@ export default function Teams() {
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <HelpCircle size={18} className="text-accentGreen" /> Toss Decision Impact
             </h3>
-            <p className="text-xs text-textMuted">Analysis of wins that came after winning the toss.</p>
+            <p className="text-xs text-slate-400 mt-1">Analysis of wins that came after winning the toss.</p>
           </div>
-          <div className="h-64 flex justify-center items-center">
+          <div className="h-72 flex justify-center items-center rounded-lg bg-slate-900/30 p-4">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -162,16 +184,25 @@ export default function Teams() {
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
-                  outerRadius={80}
+                  outerRadius={90}
                   paddingAngle={5}
                   dataKey="value"
+                  label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                  labelLine={false}
                 >
                   {tossData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={TOSS_COLORS[index % TOSS_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.08)', borderRadius: '10px' }} />
-                <Legend verticalAlign="bottom" height={36} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1e293b', 
+                    borderColor: '#10b981',
+                    borderRadius: '8px',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+                  }}
+                  formatter={(value) => [`${value} wins`, 'Count']}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -184,11 +215,11 @@ export default function Teams() {
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <BarChart2 size={18} className="text-accentPurple" /> Season-wise Trend
           </h3>
-          <p className="text-xs text-textMuted">Wins and Matches Played over the seasons.</p>
+          <p className="text-xs text-slate-400 mt-1">Wins and Matches Played over the seasons.</p>
         </div>
-        <div className="h-80 w-full">
+        <div className="h-80 w-full rounded-lg overflow-hidden bg-slate-900/30 p-4">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={sortedSeasonStats}>
+            <AreaChart data={sortedSeasonStats} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
               <defs>
                 <linearGradient id="colorWins" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.8}/>
@@ -199,15 +230,51 @@ export default function Teams() {
                   <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <XAxis dataKey="season" stroke="#64748b" fontSize={11} />
-              <YAxis stroke="#64748b" fontSize={11} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.08)', borderRadius: '10px' }}
-                labelClassName="text-white font-bold"
+              <XAxis 
+                dataKey="season" 
+                stroke="#64748b" 
+                fontSize={12}
+                tick={{ fill: '#94a3b8', fontWeight: 500 }}
               />
-              <Legend />
-              <Area type="monotone" dataKey="wins" name="Wins" stroke="#38bdf8" fillOpacity={1} fill="url(#colorWins)" />
-              <Area type="monotone" dataKey="matchesPlayed" name="Matches Played" stroke="#a855f7" fillOpacity={1} fill="url(#colorMatches)" />
+              <YAxis 
+                stroke="#64748b" 
+                fontSize={12}
+                tick={{ fill: '#94a3b8' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1e293b', 
+                  borderColor: '#38bdf8',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+                }}
+                labelStyle={{ color: '#f1f5f9', fontWeight: 600 }}
+                cursor={{ fill: 'rgba(56, 189, 248, 0.1)' }}
+              />
+              <Legend 
+                wrapperStyle={{ paddingTop: '20px' }}
+                itemStyle={{ color: '#cbd5e1', fontSize: '12px', fontWeight: 500 }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="wins" 
+                name="Wins" 
+                stroke="#38bdf8" 
+                strokeWidth={2}
+                fillOpacity={1} 
+                fill="url(#colorWins)"
+                isAnimationActive={true}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="matchesPlayed" 
+                name="Matches Played" 
+                stroke="#a855f7" 
+                strokeWidth={2}
+                fillOpacity={1} 
+                fill="url(#colorMatches)"
+                isAnimationActive={true}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>

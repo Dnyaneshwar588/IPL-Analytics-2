@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Zap, HelpCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Zap, HelpCircle, AlertCircle, RefreshCw, CheckCircle } from 'lucide-react';
+import { useToastContext } from '../context/ToastContext';
 
 export default function Predictor() {
+  const toast = useToastContext();
   const [teams, setTeams] = useState([]);
   const [venues, setVenues] = useState([]);
 
@@ -62,6 +64,7 @@ export default function Predictor() {
     e.preventDefault();
     if (teamA === teamB) {
       setError('Please select two different teams.');
+      toast.error('Team A and Team B must be different');
       return;
     }
     setError('');
@@ -84,11 +87,16 @@ export default function Predictor() {
       const data = await res.json();
       if (res.ok) {
         setPrediction(data);
+        toast.success(`Prediction complete: ${data.team1} has ${data.team1_probability}% chance to win`);
       } else {
-        setError(data.details?.detail || 'Inference engine is starting up. Please try again shortly.');
+        const errorMsg = data.details?.detail || 'Inference engine is starting up. Please try again shortly.';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err) {
-      setError('Could not connect to the ML Service.');
+      const errorMsg = 'Could not connect to the ML Service.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -122,14 +130,15 @@ export default function Predictor() {
             <Zap size={18} className="text-accentBlue" /> Simulation Console
           </h3>
 
-          <form onSubmit={executePrediction} className="space-y-4">
+          <form onSubmit={executePrediction} className="space-y-5">
             {/* Team A Selection */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-textMuted uppercase tracking-wider">Team A</label>
+            <div className="flex flex-col gap-2.5">
+              <label className="form-label form-label-required">Team A</label>
               <select
                 value={teamA}
                 onChange={(e) => handleTeamAChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white font-semibold outline-none focus:border-accentBlue"
+                className="form-select"
+                required
               >
                 {teams.map(t => (
                   <option key={t.name} value={t.name}>{t.name}</option>
@@ -138,12 +147,13 @@ export default function Predictor() {
             </div>
 
             {/* Team B Selection */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-textMuted uppercase tracking-wider">Team B</label>
+            <div className="flex flex-col gap-2.5">
+              <label className="form-label form-label-required">Team B</label>
               <select
                 value={teamB}
                 onChange={(e) => handleTeamBChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white font-semibold outline-none focus:border-accentBlue"
+                className="form-select"
+                required
               >
                 {teams.map(t => (
                   <option key={t.name} value={t.name}>{t.name}</option>
@@ -152,12 +162,13 @@ export default function Predictor() {
             </div>
 
             {/* Venue Selection */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-textMuted uppercase tracking-wider">Venue</label>
+            <div className="flex flex-col gap-2.5">
+              <label className="form-label form-label-required">Venue</label>
               <select
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white font-semibold outline-none focus:border-accentBlue"
+                className="form-select"
+                required
               >
                 {venues.map(v => (
                   <option key={v.venue} value={v.venue}>{v.venue}</option>
@@ -166,12 +177,13 @@ export default function Predictor() {
             </div>
 
             {/* Toss Winner Selection */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-textMuted uppercase tracking-wider">Toss Winner</label>
+            <div className="flex flex-col gap-2.5">
+              <label className="form-label form-label-required">Toss Winner</label>
               <select
                 value={tossWinner}
                 onChange={(e) => setTossWinner(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white font-semibold outline-none focus:border-accentBlue"
+                className="form-select"
+                required
               >
                 <option value={teamA}>{teamA}</option>
                 <option value={teamB}>{teamB}</option>
@@ -179,12 +191,13 @@ export default function Predictor() {
             </div>
 
             {/* Toss Decision Selection */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-textMuted uppercase tracking-wider">Toss Decision</label>
+            <div className="flex flex-col gap-2.5">
+              <label className="form-label form-label-required">Toss Decision</label>
               <select
                 value={tossDecision}
                 onChange={(e) => setTossDecision(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white font-semibold outline-none focus:border-accentBlue"
+                className="form-select"
+                required
               >
                 <option value="field">Field First (Chasing)</option>
                 <option value="bat">Bat First (Defending)</option>
@@ -193,9 +206,16 @@ export default function Predictor() {
 
             {/* Error Message */}
             {error && (
-              <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-red-400 text-xs flex items-center gap-2">
-                <AlertCircle size={14} className="shrink-0" />
-                <span>{error}</span>
+              <div className="alert alert-error flex items-center gap-3 animate-slide-down">
+                <AlertCircle size={16} className="shrink-0" />
+                <span className="flex-1">{error}</span>
+                <button
+                  type="button"
+                  onClick={() => setError('')}
+                  className="hover:opacity-70 transition-opacity"
+                >
+                  ✕
+                </button>
               </div>
             )}
 
@@ -203,14 +223,16 @@ export default function Predictor() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-accentBlue to-accentPurple font-extrabold text-white text-sm hover:opacity-95 disabled:opacity-40 transition-all flex justify-center items-center gap-2"
+              className="btn btn-primary w-full justify-center gap-2 mt-6"
             >
               {loading ? (
                 <>
-                  <RefreshCw className="animate-spin" size={16} /> Run Simulation
+                  <RefreshCw className="animate-spin" size={16} /> Running Simulation...
                 </>
               ) : (
-                'Run Simulation'
+                <>
+                  <Zap size={16} /> Run Simulation
+                </>
               )}
             </button>
           </form>

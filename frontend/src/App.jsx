@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Trophy, Users, MapPin, Zap, Sparkles, Menu, X } from 'lucide-react';
+import { ToastProvider } from './context/ToastContext';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -25,14 +26,22 @@ function Navigation() {
 
   return (
     <>
+      {/* Skip to main content link for accessibility */}
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      
       {/* Mobile Header */}
       <header className="flex h-16 items-center justify-between border-b border-cardBorder bg-slate-950 px-6 lg:hidden">
         <div className="flex items-center gap-2">
-          <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
+          <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5" aria-label="IPL Pro Analytics Dashboard">
             IPL <span className="text-accentBlue">PRO</span>
           </span>
         </div>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-textMain">
+        <button 
+          onClick={() => setSidebarOpen(!sidebarOpen)} 
+          className="text-textMain"
+          aria-label={sidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={sidebarOpen}
+        >
           {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </header>
@@ -42,19 +51,20 @@ function Navigation() {
         className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-cardBorder bg-slate-950 px-4 py-6 transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:static`}
+        aria-label="Main navigation"
       >
         {/* Logo */}
         <div className="mb-8 px-2 flex items-center gap-2">
           <span className="text-2xl font-black tracking-tight text-white">
             IPL <span className="text-accentBlue">PRO</span>
           </span>
-          <span className="text-[10px] uppercase font-bold tracking-widest bg-accentBlue/10 text-accentBlue px-2 py-0.5 rounded border border-accentBlue/20">
+          <span className="text-[10px] uppercase font-bold tracking-widest bg-accentBlue/10 text-accentBlue px-2 py-0.5 rounded border border-accentBlue/20" aria-hidden="true">
             Console
           </span>
         </div>
 
         {/* Menu Items */}
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 space-y-1" aria-label="Navigation menu">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             
@@ -68,6 +78,7 @@ function Navigation() {
                     ? 'bg-slate-900 text-accentBlue shadow-inner' 
                     : 'text-textMuted hover:bg-slate-900/40 hover:text-textMain'
                 }`}
+                aria-current={isActive ? 'page' : undefined}
               >
                 {item.icon}
                 <span>{item.name}</span>
@@ -88,23 +99,29 @@ function Navigation() {
 
 export default function App() {
   return (
-    <Router>
-      <div className="flex min-h-screen flex-col lg:flex-row bg-darkBg">
-        {/* Navigation Sidebar */}
-        <Navigation />
+    <ToastProvider>
+      <Router>
+        <div className="flex min-h-screen flex-col lg:flex-row bg-darkBg">
+          {/* Navigation Sidebar */}
+          <Navigation />
 
-        {/* Main Content Area */}
-        <main className="flex-1 px-6 py-8 md:px-8 overflow-y-auto max-h-screen">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/teams" element={<Teams />} />
-            <Route path="/players" element={<Players />} />
-            <Route path="/venues" element={<Venues />} />
-            <Route path="/predictor" element={<Predictor />} />
-            <Route path="/fantasy" element={<FantasyXI />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+          {/* Main Content Area */}
+          <main 
+            id="main-content"
+            className="flex-1 px-6 py-8 md:px-8 overflow-y-auto max-h-screen"
+            role="main"
+          >
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/teams" element={<Teams />} />
+              <Route path="/players" element={<Players />} />
+              <Route path="/venues" element={<Venues />} />
+              <Route path="/predictor" element={<Predictor />} />
+              <Route path="/fantasy" element={<FantasyXI />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </ToastProvider>
   );
 }
