@@ -1,13 +1,18 @@
 const fs = require('fs');
 const path = require('path');
+
+// Add backend node_modules to module search path
+module.paths.push(path.join(__dirname, '../backend/node_modules'));
+
 const csv = require('csv-parser');
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const Match = require('../backend/models/match.model');
 const Delivery = require('../backend/models/delivery.model');
 const Team = require('../backend/models/team.model');
 const Player = require('../backend/models/player.model');
 
-require('dotenv').config({ path: path.join(__dirname, '../backend/.env') });
+dotenv.config({ path: path.join(__dirname, '../backend/.env') });
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ipl_analytics';
 
@@ -93,9 +98,9 @@ async function seed() {
             tossDecision: row.toss_decision || 'Unknown',
             winner: row.winner === 'NA' || !row.winner ? 'No Result' : winner,
             result: row.result || 'Unknown',
-            resultMargin: row.result_margin ? parseInt(row.result_margin) : 0,
-            targetRuns: row.target_runs ? parseInt(row.target_runs) : 0,
-            targetOvers: row.target_overs ? parseFloat(row.target_overs) : 20,
+            resultMargin: parseInt(row.result_margin) || 0,
+            targetRuns: parseInt(row.target_runs) || 0,
+            targetOvers: parseFloat(row.target_overs) || 20,
             superOver: row.super_over || 'N',
             method: row.method || 'NA',
             umpire1: row.umpire1 || 'NA',
@@ -113,7 +118,7 @@ async function seed() {
     // 2. Load and Seed Deliveries in Batches
     const deliveriesPath = path.join(__dirname, '../dataset/deliveries.csv');
     console.log(`Parsing deliveries from ${deliveriesPath}...`);
-    
+
     // Aggregation maps to build team and player stats on the fly
     const teamStats = {};
     const playerStats = {};
@@ -156,7 +161,7 @@ async function seed() {
     for (const match of matches) {
       const t1 = getTeamObj(match.team1);
       const t2 = getTeamObj(match.team2);
-      
+
       t1.matchesPlayed++;
       t2.matchesPlayed++;
 
@@ -192,10 +197,10 @@ async function seed() {
       if (s) {
         if (!t1.seasonStatsMap[s]) t1.seasonStatsMap[s] = { season: s, matchesPlayed: 0, wins: 0 };
         if (!t2.seasonStatsMap[s]) t2.seasonStatsMap[s] = { season: s, matchesPlayed: 0, wins: 0 };
-        
+
         t1.seasonStatsMap[s].matchesPlayed++;
         t2.seasonStatsMap[s].matchesPlayed++;
-        
+
         if (match.winner && match.winner !== 'No Result') {
           const w = getTeamObj(match.winner);
           if (!w.seasonStatsMap[s]) w.seasonStatsMap[s] = { season: s, matchesPlayed: 0, wins: 0 };
@@ -376,7 +381,7 @@ async function seed() {
       fp += p.fieldingStats.catches * 8;
       fp += p.fieldingStats.stumpings * 12;
       fp += p.fieldingStats.runOuts * 6;
-      
+
       p.fantasyPoints = Math.round(fp);
 
       return p;
